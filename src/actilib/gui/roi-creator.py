@@ -18,7 +18,7 @@ def roi_from_row(row):
         return SquareROI(row[4], row[2], row[3])
     elif row[1] == 'Circle':
         return CircleROI(row[4] / 2.0, row[2], row[3])
-    raise ValueError
+    raise ValueError('ROI shape "" not supported')
 
 
 class RoiCreator(QMainWindow):
@@ -211,7 +211,9 @@ class RoiCreator(QMainWindow):
     def roi_redraw_all(self):
         self.canvas.clear_rois()
         for r in range(self.roimodel.rowCount(0)):
-            self.canvas.add_roi(roi_from_row(self.roimodel.getRowData(r)))
+            row_data = self.roimodel.getRowData(r)
+            if row_data != self.roimodel.getRowTemplate():
+                self.canvas.add_roi(roi_from_row(row_data))
         self.roi_highlight_selected()
 
     def roi_remove_selected(self):
@@ -236,10 +238,13 @@ class RoiCreator(QMainWindow):
         self._total_roi_counter += 1
         data[0] = 'ROI{}'.format(self._total_roi_counter)
         data[1] = shape
+        data[2] = 16
+        data[3] = 16
+        data[4] = 32
         self.roimodel.addRow(data)
         self.roitable.selectRow(self.roimodel.rowCount(0) - 1)
         self.canvas.add_roi(roi_from_row(self.roimodel.getRowData(self.roimodel.rowCount(0) - 1)))
-        self.roi_highlight_selected()
+        self.roi_redraw_all()
 
     def roi_load_list(self):
         # select file and write

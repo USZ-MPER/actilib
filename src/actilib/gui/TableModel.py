@@ -15,7 +15,7 @@ class TableModel(QAbstractTableModel):
     def columnCount(self, index):
         # The following takes the first sub-list, and returns
         # the length (only works if all rows are an equal length)
-        return len(self._data[0])
+        return len(self._columns)
 
     def getColumns(self):
         return self._columns
@@ -54,8 +54,8 @@ class TableModel(QAbstractTableModel):
         return False
 
     def addRow(self, row_data, position='bottom'):
-        if self._data[-1] == self._dummyrow:
-            self._data[-1] = row_data
+        if self._data == [self._dummyrow]:
+            self._data = [row_data]
         else:
             if 'top' == position:
                 self._data.insert(0, row_data)
@@ -66,6 +66,8 @@ class TableModel(QAbstractTableModel):
     def removeRow(self, row: int, parent: QModelIndex = ...) -> bool:
         if self._data[row] != self._dummyrow:
             self._data.pop(row)
+            if not self._data:  # empty
+                self._data = [self._dummyrow.copy()]
             self.layoutChanged.emit()
             return True
         return False
@@ -87,6 +89,6 @@ class TableModel(QAbstractTableModel):
         return super().setHeaderData(section, orientation, self._columns[section], role)
 
     def flags(self, index):
-        if index.column() == 1 or self._data[-1] == self._dummyrow:  # Shape and initial row not editable
+        if index.column() == 1 or self._data == [self._dummyrow]:  # Shape and initial row not editable
             return Qt.ItemIsSelectable | Qt.ItemIsEnabled
         return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
