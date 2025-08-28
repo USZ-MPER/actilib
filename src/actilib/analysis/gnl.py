@@ -26,7 +26,7 @@ def calculate_local_std(img, kernel_size, algorithm):
         kernel = np.ones(kernel_shape) / (kernel_size ** 2)
         mean_of_sq = convolve2d(img ** 2, kernel, mode='same', boundary='symm')
         sq_of_mean = convolve2d(img, kernel, mode='same', boundary='symm') ** 2
-        img_std = np.sqrt(mean_of_sq - sq_of_mean)
+        img_std = np.sqrt(np.abs(mean_of_sq - sq_of_mean))
     elif 'sliding_window_view' == algorithm:  # 30% fastest as convolution, but must be padded
         margin = int((kernel_size - 1) / 2)
         img_pad = np.full((margin + margin + img.shape[0], margin + margin + img.shape[1]), np.nan)
