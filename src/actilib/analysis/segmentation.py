@@ -2,7 +2,7 @@ from enum import Enum
 import numpy as np
 
 
-HUMIN = -999
+HUMIN = -8192
 HUMAX = 24000
 
 
