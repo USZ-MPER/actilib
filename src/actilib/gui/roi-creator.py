@@ -206,6 +206,7 @@ class RoiCreator(QMainWindow):
     def select_image(self):
         image_index = self.canvas.show_image(array_index=self.slider.value()-1)
         if image_index is not None:
+            self.roi_redraw_all()
             self.display_new_image_index()
 
     def roi_redraw_all(self):
