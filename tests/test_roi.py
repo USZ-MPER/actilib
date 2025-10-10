@@ -58,6 +58,19 @@ class TestROIs(unittest.TestCase):
         self.assertEqual(get_surrounding_sum(self.image, roi, ROI_RADI), 20)
         self.assertAlmostEqual(get_surrounding_average(self.image, roi, ROI_RADI), 0.625, delta=0.01)
 
+    def test_masked_std(self):
+        image = np.array([
+            [5, 0, 1, 0, 5],
+            [0, 1, 1, 1, 0],
+            [1, 1, 1, 1, 1],
+            [0, 1, 1, 1, 0],
+            [5, 0, 1, 0, 5]
+        ])
+        roi = SquareROI(3, center_x=2, center_y=2)
+        self.assertEqual(roi.get_masked_std(image), 0.0)
+        roi = SquareROI(5, center_x=2, center_y=2)
+        self.assertEqual(roi.get_masked_std(image), image.std())
+
 
 if __name__ == '__main__':
     unittest.main()
