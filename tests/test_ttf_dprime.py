@@ -76,7 +76,7 @@ class TestAnalysis(unittest.TestCase):
             # NPWE filtering
             dprime_params = get_dprime_default_params()
             dprime_params['task_contrast_hu'] = ttf['contrast']
-            dprime_params['view_model'] = 'NPWE'
+            dprime_params['view_observer_model'] = 'NPWE'
             dprime = calculate_dprime(nps, ttf, params=dprime_params)
             self.assertAlmostEqual(dprime, dprime_references_npwe[r], delta=tolerance_perc*dprime)
 

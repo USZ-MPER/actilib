@@ -9,7 +9,7 @@ from actilib.helpers.math import get_polar_mesh
 def get_dprime_default_params():
     return {
         "task_profile": 'Flat',      # 2D shape of the object [Flat, Gaussian...]
-        "task_profile_coeff": 1,     # blur factor (Gaussian profile) or exponent of shape (Ogive profile)
+        "task_profile_coeff": 1,     # blur factor (GaussianEdge profile) or exponent of shape (Ogival profile)
         "task_diameter_mm": 10,      # lesion diameter for simulations [mm]
         "task_contrast_hu": 15,      # contrast of the ROI [HU]
         "task_pixel_number": 300,    #
@@ -17,7 +17,8 @@ def get_dprime_default_params():
         "view_pixel_size_mm": 0.2,   # pixel size for the display (monitor resolution)
         "view_zoom": 1,              # magnification factor to simulate display
         "view_distance_mm": 400,     #
-        "view_model": 'NPW'          # ['NPW', 'NPWE']
+        "view_observer_model": 'NPW',  # ['NPW', 'NPWE']
+        "view_eye_model": 'Saunders'   # ['Eckstein', 'Saunders']
     }
 
 
@@ -72,19 +73,18 @@ def resample_2d_nps(data_freq, data_nps, dest_freq, mode='2D'):
 
 def get_eye_filter(params, freq_1d=None):
     task_npx, task_psize = params['task_pixel_number'], params['task_pixel_size_mm']
-    if params['view_model'] == 'NPWE':
-        # the following three parameters are hardcoded because nobody is actually changing them (except c, in one paper)
+    if params['view_observer_model'] == 'NPWE':
+        freq_1d = freq_1d if freq_1d is not None else np.fft.fftshift(np.fft.fftfreq(task_npx, task_psize))
+        freq_2d_a, freq_2d_r = get_polar_mesh(freq_1d)
         n = 1.5
-        c = 3.22  # deg^-1
+        c = 0.98 if params['view_eye_model'] == 'Eckstein' else 3.22  # deg^-1, defaulting to 'Saunders'
         a = 0.68
         distance_mm = params['view_distance_mm']  # mm, visual distance
         fov_mm = task_npx * task_psize  # (!) TASK PXSIZE
         display_mm = params['view_zoom'] * task_npx * params["view_pixel_size_mm"]  # (!) VIEW PXSIZE
-        freq_1d = freq_1d if freq_1d is not None else np.fft.fftshift(np.fft.fftfreq(task_npx, task_psize))
-        freq_2d_a, freq_2d_r = get_polar_mesh(freq_1d)
         rho = freq_2d_r * fov_mm * distance_mm * np.pi / display_mm / 180
-        filter = np.power(rho, 2*n) * np.exp(-c * 2 * np.power(rho, a))
-        return filter / np.max(filter)
+        eye_filter = np.power(rho, 2*n) * np.exp(-c * 2 * np.power(rho, a))
+        return eye_filter / np.max(eye_filter)
     return np.ones((task_npx, task_npx))
 
 
