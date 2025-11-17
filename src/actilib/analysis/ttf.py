@@ -96,7 +96,7 @@ def calculate_roi_ttf(images, roi, pixel_size_xy_mm):
                       'esf': esf, 'lsf': lsf, 'f10': f10, 'f50': f50}
 
 
-def ttf_properties(dicom_images, roi, strategy='combine'):
+def ttf_properties(dicom_images, roi, strategy='combine', auto_centering=True):
     if not isinstance(dicom_images, list):
         dicom_images = [dicom_images]
     pixel_size_xy_mm = np.array(dicom_images[0]['header'].PixelSpacing)
@@ -109,9 +109,10 @@ def ttf_properties(dicom_images, roi, strategy='combine'):
     # processing images in two different ways
     #
     if len(images) == 1 or strategy == 'combine':
-        # re-estimate center (precision needed for radial profile calculation)
-        # we do it only once on the average image
-        roi.auto_adjust_center(np.mean(images, axis=0))
+        if auto_centering:
+            # re-estimate center (precision needed for radial profile calculation)
+            # we do it only once on the average image
+            roi.auto_adjust_center(np.mean(images, axis=0))
         frq, ttf, other = calculate_roi_ttf(images, roi, pixel_size_xy_mm)
         return {
             'esf': other['esf'].tolist(),
@@ -139,8 +140,9 @@ def ttf_properties(dicom_images, roi, strategy='combine'):
         cnr_list = []
         noi_list = []
         for i_image, image in enumerate(images):
-            # re-estimate center (precision needed for radial profile calculation)
-            roi.auto_adjust_center(image)
+            if auto_centering:
+                # re-estimate center (precision needed for radial profile calculation)
+                roi.auto_adjust_center(image)
             frq, ttf, other = calculate_roi_ttf(image, roi, pixel_size_xy_mm)
             if ttf_list is None:
                 ttf_list = np.empty((0, len(ttf)))
