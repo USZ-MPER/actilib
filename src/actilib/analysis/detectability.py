@@ -1,12 +1,14 @@
 import math
 import numpy as np
 from scipy.interpolate import RectBivariateSpline
+from scipy.special import erfc
+from scipy import signal
 from actilib.helpers.math import get_polar_mesh
 
 
 def get_dprime_default_params():
     return {
-        "task_profile": 'Flat',      # 2D shape of the object [Flat, Gaussian, Ogive]
+        "task_profile": 'Flat',      # 2D shape of the object [Flat, Gaussian...]
         "task_profile_coeff": 1,     # blur factor (Gaussian profile) or exponent of shape (Ogive profile)
         "task_diameter_mm": 10,      # lesion diameter for simulations [mm]
         "task_contrast_hu": 15,      # contrast of the ROI [HU]
@@ -33,8 +35,12 @@ def calculate_task_image(params):
         task = np.zeros(mesh_r.shape)
         task[mesh_r <= radius] = params['task_contrast_hu']
     elif params['task_profile'] == 'Gaussian':
-        task = (params['task_contrast_hu'] / 2) * (1 - math.erf((mesh_r - radius) / params['task_profile_coeff']))
-    elif params['task_profile'] == 'Ogive':
+        task_std = 2 * radius / params['task_pixel_size_mm'] / 2.355  # FWHM = 2.355*std
+        task_profile = signal.gaussian(mesh_r.shape[0], task_std)
+        task = params['task_contrast_hu'] * np.outer(task_profile, task_profile)
+    elif params['task_profile'] == 'GaussianEdge':
+        task = (params['task_contrast_hu'] / 2) * erfc((mesh_r - radius) / params['task_profile_coeff'])
+    elif params['task_profile'] == 'Ogival':
         task = ((1 - ((mesh_r / radius) ** 2)) ** params['task_profile_coeff']) * params['task_contrast_hu']
         task[mesh_r > radius] = 0
     else:

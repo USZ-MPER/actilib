@@ -1,3 +1,9 @@
+# Most of the calculations implemented here are based on
+# Richard et al.: Towards task-based assessment of CT performance...
+# Medical Physics, Vol. 39, No. 7, July 2012
+# https://doi.org/10.1118/1.4725171
+
+
 import math
 import numpy as np
 from actilib.helpers.math import radial_profile, find_x_of_threshold
@@ -45,12 +51,12 @@ def calculate_roi_ttf(images, roi, pixel_size_xy_mm):
         images = [images]
     pixel_size_mm = pixel_size_xy_mm[0]  # we assume square pixels otherwise the radius in mm is a mess to calculate...
     # prepare masks and masked images
-    # - to calculate the ROI average HU we consider a region that is 95% of the radius
+    # - to calculate the ROI average HU we consider a region that is 90% of the radius
     #   if the ROI is uniform it cuts away border effects, if the ROI is not uniform then... whatever
-    # - to calculate the background values we consider a region between 110% and 150% of the radius
+    # - to calculate the background values we consider a region between 110% and 200% of the radius
     #   hoping that it is clean... we could play with quantiles to filter out stuff but then it would
     #   rely on assumptions on the ROI structure... of course the whole concept of 'background' is
-    #   arbitrary if we only rely on the ROI position...
+    #   arbitrary if we only rely on the ROI position.
     #   For proper noise calculations one should define a noise ROI at an appropriate location.
     fgd = 0.0
     std = 0.0
