@@ -60,14 +60,13 @@ def load_images_from_tar(tar_path):
     return images
 
 
-def load_images_from_directory(dir_path, sort_by_instance_number=True):
+def load_images_from_directory(dir_path, sort_by_instance_number=True, sort_reverse=False):
     images = []
     for file_path in sorted(Path(dir_path).glob('*')):
         if file_path.is_file():
             with open(file_path, 'rb+') as f:
-                image = load_image_from_open_file(f)
-                images.append((image['header'].InstanceNumber - 1, image))
+                images.append(load_image_from_open_file(f))
     if sort_by_instance_number:
-        images = sorted(images)
-    return [couple[1] for couple in images]
+        images.sort(key=lambda x: int(x['header'].InstanceNumber), reverse=sort_reverse)
+    return images
 
