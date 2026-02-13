@@ -7,7 +7,7 @@ def show_current_image():
     plt.show()
 
 
-def display_image(pixel_array, flag_show=True, dicom_header=None, cmap='gray'):
+def display_image(pixel_array, flag_show=True, dicom_header=None, cmap='gray', saveas=None):
     fig, ax = plt.subplots()
     # fig.set_size_inches(18.5, 10.5)
     plt.tight_layout()
@@ -17,6 +17,8 @@ def display_image(pixel_array, flag_show=True, dicom_header=None, cmap='gray'):
         ax.imshow(apply_windowing(pixel_array, dicom_header), cmap=cmap)
     if flag_show:
         plt.show()
+    if saveas is not None:
+        plt.savefig(saveas)
     return fig, ax
 
 
