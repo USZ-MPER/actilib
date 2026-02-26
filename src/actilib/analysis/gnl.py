@@ -37,10 +37,18 @@ def calculate_local_std(img, kernel_size, algorithm):
     return img_std
 
 
+def mask_rois(pixels, rois):
+    if not isinstance(rois, list):
+        rois = [rois]
+    for roi in rois:
+        pixels[roi[0]:roi[1], roi[2]:roi[3]] = roi[4]
+    return pixels
+
+
 def calculate_gnl(dicom_images, tissues=SegMats.SOFT_TISSUE, kernel_radius_mm=3,
                   hu_ranges=get_default_segmentation_thresholds(),
-                  return_plot_data=False, mask_rois=None,
-                  algorithm='convolution'):
+                  return_plot_data=False, masking_rois=None,
+                  algorithm='convolution', segmentation=None):
     # input preparation
     if not isinstance(dicom_images, list):
         dicom_images = [dicom_images]
@@ -51,13 +59,15 @@ def calculate_gnl(dicom_images, tissues=SegMats.SOFT_TISSUE, kernel_radius_mm=3,
     for dicom_image in dicom_images:
         pixels = dicom_image['pixels']
         # 0. masking ROIs (e.g. image numbers, arrows...)
-        if mask_rois is not None:
-            if not isinstance(mask_rois, list):
-                mask_rois = [mask_rois]
-            for roi in mask_rois:
-                pixels[roi[0]:roi[1], roi[2]:roi[3]] = roi[4]
+        if masking_rois is not None:
+            mask_rois(pixels, masking_rois)
         # 1. threshold-based segmentation
-        segmap = segment_with_thresholds(pixels, hu_ranges)
+        segmap = segmentation
+        if segmap is None:
+            segmap = segment_with_thresholds(pixels, hu_ranges)
+        else:
+            if masking_rois is not None:
+                mask_rois(segmap, masking_rois)
         # 2. calculation of local SD - kernel has always an odd number of pixels
         kernel_size_px = 1 + np.round(2 * kernel_radius_mm / dicom_image['header'].PixelSpacing[0]).astype(int)
         if [None] != tissues:
@@ -67,7 +77,7 @@ def calculate_gnl(dicom_images, tissues=SegMats.SOFT_TISSUE, kernel_radius_mm=3,
                 img_gnl = calculate_local_std(img_segm, kernel_size_px, algorithm)
                 gnlmap = np.where(segmap == tissue.value, img_gnl, gnlmap)
         else:
-            gnlmap = calculate_local_std(img_segm, kernel_size_px, algorithm)
+            gnlmap = calculate_local_std(pixels, kernel_size_px, algorithm)
         # 3. histogram of local SD and mode
         gnls.append(get_histogram_mode(gnlmap))
     if return_plot_data:
