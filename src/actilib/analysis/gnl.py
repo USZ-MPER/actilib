@@ -70,6 +70,6 @@ def calculate_gnl(dicom_images, tissues=SegMats.SOFT_TISSUE, kernel_radius_mm=3,
             gnlmap = calculate_local_std(img_segm, kernel_size_px, algorithm)
         # 3. histogram of local SD and mode
         gnls.append(get_histogram_mode(gnlmap))
-        if return_plot_data:
-            return np.mean(gnls), np.std(gnls), pixels, segmap, gnlmap
+    if return_plot_data:
+        return np.mean(gnls), np.std(gnls), pixels, segmap, gnlmap
     return np.mean(gnls), np.std(gnls)
