@@ -82,14 +82,18 @@ class PixelROI:
     def get_area(self):
         return np.sum(self.get_mask())
 
+    def get_masked_values(self, image):
+        m = np.ma.masked_array(image, ~self.get_mask(image).astype(bool))
+        return m[~m.mask].tolist()
+
     def get_masked_sum(self, image):
-        return np.sum(np.multiply(image, self.get_mask(image)))
+        return np.sum(self.get_masked_values(image))
 
     def get_masked_mean(self, image):
         return self.get_masked_sum(image) / self.get_area()
 
     def get_masked_std(self, image):
-        return np.ma.masked_array(image, ~self.get_mask(image).astype(bool)).std()
+        return np.std(self.get_masked_values(image))
 
     def auto_adjust_center(self, image, max_correction_px=5, force_recalculation=False):
         if self._flag_center_adjusted and not force_recalculation:
