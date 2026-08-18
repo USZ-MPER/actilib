@@ -1,0 +1,23 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "actilib"
+version = "0.99.1"
+authors = [
+  { name="Davide Cester", email="davide.cester@usz.ch" },
+]
+description = "Python library to analyze CT images and calculate quality metrics."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "GPL-2.0"
+license-files = ["LICENSE"]
+
+[project.urls]
+Homepage = "https://github.com/USZ-MPER/actilib"
+Issues = "https://github.com/USZ-MPER/actilib/issues"
